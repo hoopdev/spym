@@ -223,10 +223,12 @@ class RHKsm4:
         then the string. So when we read, first read a short value, which gives the
         string length, then read that much bytes which represents the string.
         '''
-
-        length = self._readb(np.uint16, 1)#first 2 bytes is the string length
-        string = ''.join([chr(i) for i in np.fromfile(self._file, dtype=np.uint16, count=length)])
-        return string.rstrip('\x00')
+        try:
+            length = self._readb(np.uint16, 1)#first 2 bytes is the string length
+            string = ''.join([chr(i) for i in np.fromfile(self._file, dtype=np.uint16, count=length)])
+            return string.rstrip('\x00')
+        except:
+            return None
 
     def _readtime(self):
         '''Read RHK filetime object
