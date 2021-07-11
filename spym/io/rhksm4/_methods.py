@@ -123,6 +123,8 @@ def _to_datarr(p, scaling):
     ## Set additional NXstm nexusformat attributes
     dr.attrs['bias'] = dr.attrs['RHK_Bias']
     dr.attrs['bias_units'] = 'V'
+    dr.attrs['bias_modulation'] = dr.attrs['RHK_CH1Drive_Amplitude']*1E3
+    dr.attrs['bias_modulation_units'] = 'mV'
     try:#TODO add support for correspondent PRM metadata
         dr.attrs['setpoint'] = dr.attrs['RHK_ZPI_SetPoint']
         dr.attrs['setpoint_units'] = dr.attrs['RHK_ZPI_SetPointUnit']
@@ -152,14 +154,16 @@ def _to_datarr(p, scaling):
         dr.attrs['offset'] *= 1E9
         dr.attrs['units'] = "nA"
     if dr.attrs['setpoint_units'] == "A":
-        dr.attrs['setpoint'] *= 1E9
-        dr.attrs['setpoint_units'] = "nA"
+        dr.attrs['setpoint'] *= 1E12
+        dr.attrs['setpoint_units'] = "pA"
+
+    # Set scaling to picometers
+    if dr.attrs['units'] == "m":
+        dr.attrs['scaling_factor'] *= 1E12
+        dr.attrs['offset'] *= 1E12
+        dr.attrs['units'] = "pm"
 
     # Set scaling to nanometers
-    if dr.attrs['units'] == "m":
-        dr.attrs['scaling_factor'] *= 1E9
-        dr.attrs['offset'] *= 1E9
-        dr.attrs['units'] = "nm"
     if dr.coords['x'].attrs['units'] == "m":
         dr = dr.assign_coords({"x": (dr.x * 1E9)})
         dr.coords['x'].attrs['offset'] = dr.attrs['RHK_Xoffset'] * 1E9
