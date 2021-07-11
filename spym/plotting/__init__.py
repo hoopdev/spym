@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import hvplot.xarray
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 
 class Plotting():
     ''' Plotting.
@@ -101,11 +103,34 @@ class Plotting():
         if "filename" in attrs:
             title += attrs["filename"] + "\n"
 
-        title += "{:.2f} {}, {:.2f} {}".format(
+        title += "V={:.2f} {}, I={:.2f} {}, Vm={:.2f} {}".format(
             attrs["bias"],
             attrs["bias_units"],
             attrs["setpoint"],
-            attrs["setpoint_units"])
+            attrs["setpoint_units"],
+            attrs["bias_modulation"],
+            attrs["bias_modulation_units"])
+
+        return title
+
+    def _format_title_plotly(self):
+        ''' Provide a title from the metadata of the DataArray.
+
+        '''
+
+        title = ""
+        attrs = self._spym._dr.attrs
+
+        if "filename" in attrs:
+            title += attrs["filename"] + "<br>"
+
+        title += "V={:.2f} {}, I={:.2f} {}, Vm={:.2f} {}".format(
+            attrs["bias"],
+            attrs["bias_units"],
+            attrs["setpoint"],
+            attrs["setpoint_units"],
+            attrs["bias_modulation"],
+            attrs["bias_modulation_units"])
 
         return title
 
@@ -134,3 +159,109 @@ class Plotting():
         fig_width, fig_height = figure.get_size_inches()
 
         return fig_width*width_scale, fig_height*height_scale
+
+
+
+    def plotly(self, title=None,):
+        ''' Plot data using plotly.
+
+        Args:
+            title: title of the figure (string). By default gives some basic information on the data plotted. Pass an empty string to disable it.
+
+        '''
+
+        dr = self._spym._dr
+        attrs = dr.attrs
+
+        # Set plot properties
+        if attrs['interpretation'] == 'spectrum':
+            # plot is an given by plotly.graph_objects.Scatter()
+            # output averaged spectrum in addition to each spectrum
+            xaxis =dict(
+                    title = "Voltage (V)",
+                    ticks= 'outside',
+                    range=(dr.x.min(),dr.x.max()),
+                    linewidth=1,
+                    linecolor='Black',
+                    mirror=True
+            )
+            yaxis =dict(
+                    title = "LIA Current (uA)",
+                    ticks= 'outside',
+                    linewidth=1,
+                    linecolor='Black',
+                    mirror=True
+            )
+
+
+            # averaged spectrum
+            fig = make_subplots(rows=1, cols=1)
+            trace_average = go.Scatter(
+                x=dr.x,
+                y=dr.values.mean(axis=0),
+                mode='lines',
+                name="average",
+                showlegend=True)
+            fig.add_trace(trace_average,row=1,col=1)
+
+            #each spectrum
+            for i,spectrum in enumerate(dr.values):
+                trace = go.Scatter(
+                    x=dr.x,
+                    y=spectrum,
+                    mode='lines',
+                    visible='legendonly',
+                    name=i,
+                    showlegend=True)
+                fig.add_trace(trace,row=1,col=1)
+            fig.update_layout(height=600, width=600,showlegend=True,xaxis=xaxis,yaxis=yaxis,xaxis_showgrid=True,yaxis_showgrid=True,plot_bgcolor='White')
+
+        elif attrs['interpretation'] == 'image':
+            # plot is given by plotly.graph_objects.Heatmap()
+            xaxis =dict(
+                    title = "X (nm)",
+                    ticks= 'outside',
+                    range=(dr.x.min(),dr.x.max()),
+                    linewidth=1,
+                    linecolor='Black',
+                    mirror=True
+            )
+            yaxis =dict(
+                    title = "Y (nm)",
+                    ticks= 'outside',
+                    range=(dr.y.min(),dr.y.max()),
+                    linewidth=1,
+                    linecolor='Black',
+                    mirror=True
+            )
+            fig = make_subplots(rows=1, cols=1)
+            trace = go.Heatmap(
+                    x = dr.x,
+                    y = dr.y,
+                    z=dr.values,
+                    colorscale= "Solar",
+                    colorbar_title="Height (pm)",
+                    showscale=True,
+                    name = 'Topography',
+            )
+
+            fig.add_trace(trace,row=1,col=1)
+            fig.update_layout(height=600, width=600,showlegend=True,xaxis=xaxis,yaxis=yaxis,xaxis_showgrid=True,yaxis_showgrid=True,plot_bgcolor='White')
+
+        else:
+            #TODO
+            # Create figure
+            # xarray plot() wraps:
+            #   - matplotlib.pyplot.plot() for 1d arrays
+            #   - matplotlib.pyplot.pcolormesh() for 2d arrays
+            #   - matplotlib.pyplot.hist() for anything else
+            # plot = dr.plot(**kwargs)
+            fig = None
+
+        # Set figure title
+        if title is None:
+            title = self._format_title_plotly()
+        fig.update_layout(title_text=title,)
+        fig.show()
+
+        return fig
