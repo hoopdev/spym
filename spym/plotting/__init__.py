@@ -162,7 +162,7 @@ class Plotting():
 
 
 
-    def plotly(self, title=None,):
+    def plotly(self, title=None, display = True):
         ''' Plot data using plotly.
 
         Args:
@@ -262,6 +262,8 @@ class Plotting():
         if title is None:
             title = self._format_title_plotly()
         fig.update_layout(title_text=title,)
-        fig.show()
+
+        if (display):
+            fig.show()
 
         return fig
