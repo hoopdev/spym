@@ -186,7 +186,7 @@ class Plotting():
                     mirror=True
             )
             yaxis =dict(
-                    title = "LIA Current (uA)",
+                    title = "LIA Current (pA)",
                     ticks= 'outside',
                     linewidth=1,
                     linecolor='Black',

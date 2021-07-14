@@ -148,11 +148,11 @@ def _to_datarr(p, scaling):
     # Set filename
     dr.attrs['filename'] = dr.attrs['RHK_FileName']
 
-    # Set scaling to nanoamperes
+    # Set scaling to picoamperes
     if dr.attrs['units'] == "A":
-        dr.attrs['scaling_factor'] *= 1E9
-        dr.attrs['offset'] *= 1E9
-        dr.attrs['units'] = "nA"
+        dr.attrs['scaling_factor'] *= 1E12
+        dr.attrs['offset'] *= 1E12
+        dr.attrs['units'] = "pA"
     if dr.attrs['setpoint_units'] == "A":
         dr.attrs['setpoint'] *= 1E12
         dr.attrs['setpoint_units'] = "pA"
