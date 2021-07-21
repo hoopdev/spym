@@ -19,6 +19,7 @@ setuptools.setup(
     install_requires=[
         "xarray",
         "scipy",
+        "plotly",
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
