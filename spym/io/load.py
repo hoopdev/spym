@@ -1,7 +1,7 @@
 import os
 from . import rhksm4, omicronscala, nanonissxm
 
-def load(filename, scaling=True):
+def load(filename, scaling=True, datatype_separate = False):
     ''' Import data from common SPM file formats.
 
     Currently supported file formats are:
@@ -12,9 +12,11 @@ def load(filename, scaling=True):
     Args:
         filename: path to the SPM file.
         scaling: if True convert data to physical units (default), if False keep raw data.
+        datatype_separate: if True pages of images and lines are handled separately, if False handled altogether.
 
     Returns:
-        xarray Dataset with data and metadata.
+        if datatype_separate is True: List of xarray Datasets with data and metadata. The length of the list is two.
+        if datatype_separate is False: xarray Dataset with data and metadata.
 
     '''
 
@@ -39,10 +41,11 @@ def load(filename, scaling=True):
 
     if filename.endswith(".sm4") or filename.endswith(".SM4"):
         try:
-            ds = rhksm4.to_dataset(filename, scaling=scaling)
+            ds = rhksm4.to_dataset(filename, scaling=scaling,datatype_separate=datatype_separate)
         except:
             print("Error: the file does not appear to be valid.")
             return None
+
 
     #TODO
     '''
@@ -53,9 +56,14 @@ def load(filename, scaling=True):
             print("Error: the file does not appear to be valid.")
             return None
     '''
-
-    for dr in ds:
-        ds[dr].attrs["filename"] = os.path.basename(filename)
+    if datatype_separate:
+        for dr in ds[0]:
+            ds[0][dr].attrs["filename"] = os.path.basename(filename)
+        for dr in ds[1]:
+            ds[1][dr].attrs["filename"] = os.path.basename(filename)
+    else:
+        for dr in ds:
+            ds[dr].attrs["filename"] = os.path.basename(filename)
 
     return ds
 

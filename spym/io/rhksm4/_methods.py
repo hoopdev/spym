@@ -20,7 +20,7 @@ def load(sm4file):
 
     return RHKsm4(sm4file)
 
-def to_dataset(sm4file, scaling=True):
+def to_dataset(sm4file, scaling=True, datatype_separate = False):
     '''This method load an RHK .sm4 file into an xarray Dataset.
     
     The xarray package is required.
@@ -51,11 +51,21 @@ def to_dataset(sm4file, scaling=True):
 
     f = load(sm4file)
 
-    ds = xr.Dataset()
-    for p in f:
-        ds[p.label] = _to_datarr(p, scaling=scaling)
+    if datatype_separate:
+        ds_image = xr.Dataset()
+        ds_line = xr.Dataset()
+        for p in f:
+            if 'Spec' in p.label:
+                ds_line[p.label] = _to_datarr(p, scaling=scaling)
+            else:
+                ds_image[p.label] = _to_datarr(p, scaling=scaling)
+        return ds_image,ds_line
 
-    return ds
+    else:
+        ds = xr.Dataset()
+        for p in f:
+            ds[p.label] = _to_datarr(p, scaling=scaling)
+        return ds
 
 def to_nexus(sm4file, filename=None, **kwargs):
     '''This method convert an RHK .sm4 file into a NeXus file.

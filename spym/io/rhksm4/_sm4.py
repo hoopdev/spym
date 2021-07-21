@@ -1106,8 +1106,14 @@ class RHKPage(RHKObjectContainer):
                 scan_direction = '_Forward'
             elif self.attrs['RHK_ScanType'] == 1:
                 scan_direction = '_Backward'
+            spectrum = ''
+        elif self.attrs['RHK_PageDataType'] == 1 and self._page_data_type != 6:
+            scan_direction = ''
+            spectrum = '_Spec'
         else:
             scan_direction = ''
+            spectrum = ''
+
 
         if self.attrs['RHK_Label'] != '':
             label = self.attrs['RHK_Label']
@@ -1115,7 +1121,7 @@ class RHKPage(RHKObjectContainer):
             label = label.replace("-", "_")
             if label.startswith("_"):
                 label = label[1:]
-            self.label = label + scan_direction
+            self.label = label + scan_direction+spectrum
         else:
             self.label = "ID" + str(self.attrs['RHK_PageID'])
 
@@ -1143,7 +1149,6 @@ class RHKPage(RHKObjectContainer):
             ## page header. The first float data in each element represents the output values.
         else:
             raw_data = np.fromfile(self._sm4._file, dtype=np.int32, count=data_size)
-
         # Reshape and store data
         self.data, self.coords = self._reshape_data(raw_data)
 
@@ -1199,5 +1204,6 @@ class RHKPage(RHKObjectContainer):
 
             data = raw_data
             coords = [('x', np.arange(xsize*ysize, dtype=np.uint32))]
+
 
         return data, coords
