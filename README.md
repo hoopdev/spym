@@ -7,5 +7,5 @@ See the [documentation](https://spym-docs.readthedocs.io/en/latest/) for detaile
 ## Installation
 
 ```
-$ python setup.py install
+$ pip install .
 ```
