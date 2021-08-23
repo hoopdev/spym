@@ -19,6 +19,7 @@ setuptools.setup(
     install_requires=[
         "xarray",
         "scipy",
+        "hvplot",
         "plotly",
     ],
     classifiers=[
